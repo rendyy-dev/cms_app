@@ -9,7 +9,7 @@
     <div class="bg-white/5 border border-white/10 rounded-xl p-6 flex flex-col justify-between hover:bg-white/10 transition">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-gray-400 text-sm">Total Users</h2>
+                <h2 class="text-gray-400 text-sm">Total Users (Termasuk Super Admin)</h2>
                 <p class="text-2xl font-bold mt-2">{{ $totalUsers ?? 0 }}</p>
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-400" fill="none"

@@ -33,6 +33,10 @@
 
                 <tbody class="divide-y divide-white/10 text-gray-100">
                 @forelse ($users as $user)
+
+                    {{-- Skip jika role super_admin --}}
+                    @continue(optional($user->role)->name === 'super_admin')
+
                     <tr class="hover:bg-white/5 transition">
                         <td class="px-6 py-4 font-medium">
                             {{ $user->name }}
@@ -47,14 +51,12 @@
                         </td>
 
                         <td class="px-6 py-4">
-                            @php
-                                $role = $user->role->name ?? null;
-                            @endphp
-
-                            @if ($role)
+                            @if ($user->role)
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold
-                                    {{ $role === 'admin' ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-500/20 text-gray-300' }}">
-                                    {{ ucfirst(str_replace('_',' ', $role)) }}
+                                    {{ $user->role->name === 'admin'
+                                        ? 'bg-blue-500/20 text-blue-400'
+                                        : 'bg-gray-500/20 text-gray-300' }}">
+                                    {{ ucfirst(str_replace('_',' ', $user->role->name)) }}
                                 </span>
                             @else
                                 <span class="text-gray-500 text-sm">-</span>
@@ -63,23 +65,42 @@
 
                         <td class="px-6 py-4">
                             <div class="flex justify-end gap-2">
-                                <a href="{{ route('admin.users.edit', $user) }}"
-                                   class="px-3 py-1.5 text-sm rounded-lg bg-white/10 hover:bg-emerald-500/20 text-emerald-400 transition">
-                                    Edit
-                                </a>
 
-                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
-                                      onsubmit="return confirm('Hapus user ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="px-3 py-1.5 text-sm rounded-lg bg-white/10 hover:bg-red-500/20 text-red-400 transition">
-                                        Hapus
-                                    </button>
-                                </form>
+                                {{-- Logic: Admin tidak bisa edit/hapus sesama admin --}}
+                                @php
+                                    $currentUser = auth()->user();
+                                    $isTargetAdmin = optional($user->role)->name === 'admin';
+                                    $isCurrentAdmin = optional($currentUser->role)->name === 'admin';
+                                    $isSelf = $currentUser->id === $user->id;
+                                @endphp
+
+                                @if (!($isCurrentAdmin && $isTargetAdmin) && !$isSelf)
+                                    
+                                    <a href="{{ route('admin.users.edit', $user) }}"
+                                       class="px-3 py-1.5 text-sm rounded-lg bg-white/10 hover:bg-emerald-500/20 text-emerald-400 transition">
+                                        Edit
+                                    </a>
+
+                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
+                                          onsubmit="return confirm('Hapus user ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="px-3 py-1.5 text-sm rounded-lg bg-white/10 hover:bg-red-500/20 text-red-400 transition">
+                                            Hapus
+                                        </button>
+                                    </form>
+
+                                @else
+                                    <span class="text-gray-500 text-sm italic">
+                                        Tidak diizinkan
+                                    </span>
+                                @endif
+
                             </div>
                         </td>
                     </tr>
+
                 @empty
                     <tr>
                         <td colspan="5" class="px-6 py-10 text-center text-gray-400">
