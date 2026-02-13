@@ -123,12 +123,23 @@
 
                     {{-- Delete --}}
                     @can('delete', $article)
-                        <form action="{{ route('articles.destroy', $article) }}" method="POST" class="inline"
-                              onsubmit="return confirm('Delete this article permanently?')">
+                        <form x-data
+                            action="{{ route('articles.destroy', $article) }}"
+                            method="POST"
+                            class="inline">
                             @csrf
                             @method('DELETE')
-                            <button class="text-gray-500 hover:text-red-400 transition">
-                                Delete
+
+                            <button type="button"
+                                @click="$store.confirm.show(
+                                    'Hapus Article',
+                                    'Yakin ingin menghapus article {{ $article->title }}?',
+                                    () => $el.closest('form').submit()
+                                )"
+                                class="px-4 py-2 rounded-lg 
+                                    bg-red-500/80 hover:bg-red-400 
+                                    text-black font-semibold text-xs transition">
+                                Hapus
                             </button>
                         </form>
                     @endcan

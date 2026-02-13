@@ -7,16 +7,26 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\RoleController;
-
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PublicArticleController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('landing');
+
+Route::get('/home', function () {
+    return view('home');
+})->middleware(['auth'])
+  ->name('home');
+
 
 // Dashboard umum untuk semua user terverifikasi
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified', 'profile.completed'])->name('dashboard');
+
+Route::get('/article', [PublicArticleController::class, 'index'])->name('public.articles.index');
+Route::get('/article/{slug}', [PublicArticleController::class, 'show'])->name('public.articles.show');
 
 // Profile routes
 Route::middleware('auth')->group(function () {
@@ -55,6 +65,15 @@ Route::middleware(['auth','role:super_admin,admin'])
     ->group(function () {
         Route::resource('users', UserController::class);
     });
+
+// Manajemen Category (Super Admin + Admin)
+Route::middleware(['auth','role:super_admin,admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('categories', CategoryController::class);
+    });
+
 
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])
     ->name('auth.google');

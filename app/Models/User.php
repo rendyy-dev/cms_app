@@ -80,4 +80,26 @@ class User extends Authenticatable implements MustVerifyEmail
         return in_array($this->role->name, $roles);
     }
 
+    public function dashboardRoute()
+    {
+        $role = $this->role->name ?? null;
+
+        switch ($role) {
+            case 'super_admin':
+                return route('super_admin.dashboard');
+
+            case 'admin':
+                return route('admin.dashboard');
+
+            case 'editor':
+                return route('editor.dashboard');
+
+            case 'author':
+                return route('author.dashboard');
+
+            default:
+                return route('dashboard');
+        }
+    }
+
 }
