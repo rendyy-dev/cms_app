@@ -42,6 +42,10 @@ Route::prefix('super-admin')
         Route::patch('/profile', [SuperAdminController::class, 'updateProfile'])
             ->name('profile.update');
 
+        Route::patch('/profile/password', 
+            [SuperAdminController::class, 'updatePassword']
+        )->name('password.update');
+
         Route::resource('roles', RoleController::class);
 });
 

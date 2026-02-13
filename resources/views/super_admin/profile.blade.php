@@ -10,7 +10,7 @@
     </div>
 @endif
 
-<form method="POST"
+<form id="profileForm" method="POST"
       action="{{ route('super_admin.profile.update') }}"
       enctype="multipart/form-data"
       class="space-y-6 max-w-xl">
@@ -77,6 +77,16 @@
             class="px-4 py-2 bg-emerald-500 text-black font-semibold rounded hover:bg-emerald-400 transition">
         Save Changes
     </button>
+
+    <!-- BUTTON -->
+    <button
+        type="button"
+        onclick="openChangePasswordModal()"
+        class="px-4 py-2 bg-blue-500 text-black rounded-lg hover:bg-blue-400 transition">
+        Ubah Password
+    </button>
+
+
 </form>
 
 <!-- Password Confirmation Modal -->
@@ -86,18 +96,22 @@
     <div class="bg-gray-900 p-6 rounded-lg w-full max-w-md border border-white/10">
         <h3 class="text-lg font-semibold mb-4">Konfirmasi Password</h3>
 
-        <input type="password"
-               id="password_confirmation_field"
-               placeholder="Masukkan password akun"
-               class="w-full bg-white/5 border border-white/10 rounded p-2 mb-4">
+        <x-password-input
+            name="password_confirm_temp"
+            id="password_confirmation_field"
+            label="Masukkan Password Akun"
+            autocomplete="current-password"
+        />
 
-        <div class="flex justify-end gap-3">
-            <button onclick="closePasswordModal()"
+        <div class="flex justify-end gap-3 mt-4">
+            <button type="button"
+                    onclick="closePasswordModal()"
                     class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500">
                 Batal
             </button>
 
-            <button onclick="submitProfileForm()"
+            <button type="button"
+                    onclick="submitProfileForm()"
                     class="px-4 py-2 bg-emerald-500 text-black font-semibold rounded hover:bg-emerald-400">
                 Konfirmasi
             </button>
@@ -105,7 +119,105 @@
     </div>
 </div>
 
+<!-- Change Password Modal -->
+<div id="changePasswordModal"
+     class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50">
+
+    <div class="bg-gray-900 p-6 rounded-lg w-full max-w-md border border-white/10">
+        <h3 class="text-lg font-semibold mb-4">Ganti Password</h3>
+
+        <form id="passwordForm"
+              method="POST"
+              action="{{ route('super_admin.password.update') }}"
+              class="space-y-4">
+
+            @csrf
+            @method('PATCH')
+
+            <x-password-input 
+                name="current_password"
+                label="Password Lama"
+                autocomplete="current-password"
+            />
+
+            <div
+                x-data="{
+                    password: '',
+                    touched: false,
+                    rules() {
+                        return {
+                            length: this.password.length >= 8,
+                            upper: /[A-Z]/.test(this.password),
+                            lower: /[a-z]/.test(this.password),
+                            number: /[0-9]/.test(this.password),
+                            symbol: /[^A-Za-z0-9]/.test(this.password),
+                        }
+                    }
+                }"
+            >
+
+                <x-password-input 
+                    name="new_password"
+                    label="Password Baru"
+                    autocomplete="new-password"
+                    x-model="password"
+                    @input="touched = true"
+                />
+
+                <!-- Live rules -->
+                <div x-show="touched" class="mt-2 text-sm text-gray-400 space-y-1">
+
+                    <template x-if="!rules().length">
+                        <p>• Minimal 8 karakter</p>
+                    </template>
+
+                    <template x-if="!rules().upper">
+                        <p>• Minimal 1 huruf besar</p>
+                    </template>
+
+                    <template x-if="!rules().lower">
+                        <p>• Minimal 1 huruf kecil</p>
+                    </template>
+
+                    <template x-if="!rules().number">
+                        <p>• Minimal 1 angka</p>
+                    </template>
+
+                    <template x-if="!rules().symbol">
+                        <p>• Minimal 1 simbol</p>
+                    </template>
+
+                </div>
+
+            </div>
+
+            <x-password-input 
+                name="new_password_confirmation"
+                label="Konfirmasi Password Baru"
+                autocomplete="new-password"
+            />
+
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button"
+                        onclick="closeChangePasswordModal()"
+                        class="px-4 py-2 bg-gray-600 rounded hover:bg-gray-500">
+                    Batal
+                </button>
+
+                <button type="submit"
+                        class="px-4 py-2 bg-emerald-500 text-black font-semibold rounded hover:bg-emerald-400">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    /* =============================
+       PROFILE UPDATE MODAL
+    ==============================*/
+
     function openPasswordModal() {
         document.getElementById('passwordModal').classList.remove('hidden');
         document.getElementById('passwordModal').classList.add('flex');
@@ -126,9 +238,41 @@
 
         document.getElementById('current_password_input').value = password;
 
-        document.querySelector('form').submit();
+        document.getElementById('profileForm').submit();
     }
-</script>
 
+    /* =============================
+       CHANGE PASSWORD MODAL
+    ==============================*/
+
+    function openChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.remove('hidden');
+        document.getElementById('changePasswordModal').classList.add('flex');
+    }
+
+    function closeChangePasswordModal() {
+        document.getElementById('changePasswordModal').classList.add('hidden');
+        document.getElementById('changePasswordModal').classList.remove('flex');
+    }
+
+
+    /* =============================
+       CLOSE MODAL ON OUTSIDE CLICK
+    ==============================*/
+
+    window.addEventListener('click', function(e) {
+
+        const profileModal = document.getElementById('passwordModal');
+        const changeModal = document.getElementById('changePasswordModal');
+
+        if (e.target === profileModal) {
+            closePasswordModal();
+        }
+
+        if (e.target === changeModal) {
+            closeChangePasswordModal();
+        }
+    });
+</script>
 
 @endsection
