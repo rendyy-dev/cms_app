@@ -23,6 +23,8 @@ class Album extends Model
         'is_featured' => 'boolean',
     ];
 
+    protected $dates = ['deleted_at'];
+
     public function media()
     {
         return $this->hasMany(\App\Models\Media::class);

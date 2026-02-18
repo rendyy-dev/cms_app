@@ -62,11 +62,19 @@ Route::prefix('super-admin')
 });
 
 // Manajemen User (Super Admin + Admin)
-Route::middleware(['auth','role:super_admin,admin'])
+Route::prefix('admin')
+    ->middleware(['auth','role:super_admin,admin'])
     ->name('admin.')
     ->group(function () {
+        
+        // Trash route
+        Route::get('users/trash', [UserController::class, 'trashedUsers'])->name('users.trash');
+        Route::post('users/{id}/restore', [UserController::class, 'restoreUser'])->name('users.restore');
+        Route::delete('users/{id}/force-delete', [UserController::class, 'forceDeleteUser'])->name('users.forceDelete');
+
         Route::resource('users', UserController::class);
-    });
+});
+
 
 // Manajemen Category (Super Admin + Admin)
 Route::middleware(['auth','role:super_admin,admin'])

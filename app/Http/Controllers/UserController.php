@@ -103,4 +103,29 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'User telah dihapus.');
     }
+
+    // Controller
+    public function trashedUsers()
+    {
+        $users = User::onlyTrashed()->with('role')->get();
+        return view('users.trash', compact('users'));
+    }
+
+
+    // Restore
+    public function restoreUser($id)
+    {
+        $user = User::withTrashed()->find($id);
+        $user->restore(); // kembali normal
+        return redirect()->back()->with('success', 'User berhasil direstore');
+    }
+
+    // Force Delete
+    public function forceDeleteUser($id)
+    {
+        $user = User::withTrashed()->find($id);
+        $user->forceDelete(); // hapus permanen
+        return redirect()->back()->with('success', 'User dihapus permanen');
+    }
+
 }

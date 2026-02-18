@@ -11,10 +11,18 @@
             </p>
         </div>
 
-        <a href="{{ route('admin.users.create') }}"
-           class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
-            + Tambah User
-        </a>
+        <div class="flex gap-2">
+            <a href="{{ route('admin.users.create') }}"
+            class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
+                + Tambah User
+            </a>
+
+            {{-- Tombol Trash --}}
+            <a href="{{ route('admin.users.trash') }}"
+            class="inline-flex items-center gap-2 px-5 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition">
+                Sampah
+            </a>
+        </div>
     </div>
 
     {{-- Table Card --}}

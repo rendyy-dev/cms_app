@@ -17,9 +17,11 @@
 
     <!-- NAVIGATION -->
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+
         <!-- Dashboard -->
         <a href="{{ route('super_admin.dashboard') }}"
-           class="block px-4 py-3 rounded-lg hover:bg-white/10 transition flex items-center gap-3">
+           class="block px-4 py-3 rounded-lg transition flex items-center gap-3
+           {{ request()->routeIs('super_admin.dashboard') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -30,10 +32,8 @@
 
         <!-- Profile -->
         <a href="{{ route('super_admin.profile') }}"
-        class="block px-4 py-3 rounded-lg transition flex items-center gap-3
-        {{ request()->routeIs('profile.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
-
-            <!-- User Circle Icon -->
+           class="block px-4 py-3 rounded-lg transition flex items-center gap-3
+           {{ request()->routeIs('super_admin.profile') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg"
                 class="h-5 w-5 text-emerald-400"
                 fill="none"
@@ -49,7 +49,8 @@
 
         <!-- Users -->
         <a href="{{ route('super_admin.users') }}"
-           class="block px-4 py-3 rounded-lg hover:bg-white/10 transition flex items-center gap-3">
+           class="block px-4 py-3 rounded-lg transition flex items-center gap-3
+           {{ request()->routeIs('super_admin.users') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -62,7 +63,8 @@
 
         <!-- Roles -->
         <a href="{{ route('super_admin.roles.index') }}"
-           class="block px-4 py-3 rounded-lg hover:bg-white/10 transition flex items-center gap-3">
+           class="block px-4 py-3 rounded-lg transition flex items-center gap-3
+           {{ request()->routeIs('super_admin.roles.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -123,16 +125,16 @@
             Galleries
         </a>
 
-        <!-- Produk -->
+        <!-- Ebook -->
         <a href=""
            class="block px-4 py-3 rounded-lg transition flex items-center gap-3
-           {{ request()->routeIs('products.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
+           {{ request()->routeIs('admin.ebooks.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6M20 13l-8 8-8-8"/>
+                      d="M12 20h9M3 4h18v16H3V4zM3 8h18"/>
             </svg>
-            Produk
+            Ebook
         </a>
 
     </nav>
