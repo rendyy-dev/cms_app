@@ -67,7 +67,9 @@
         <label class="block text-sm font-medium mb-2">Cover Image</label>
         <input 
             type="file" 
+            id="preview-cover-input"
             name="cover"
+            accept="image/*"
             class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 
                    file:rounded-lg file:border-0 file:bg-emerald-500 
                    file:text-black file:font-semibold hover:file:bg-emerald-400"
@@ -113,8 +115,6 @@
 
     {{-- ACTION BUTTONS --}}
     <div class="flex items-center gap-3 pt-4">
-
-        {{-- Save Draft --}}
         <button type="submit"
                 name="action"
                 value="draft"
@@ -123,7 +123,6 @@
             Save
         </button>
 
-        {{-- Submit --}}
         <button type="submit"
                 name="action"
                 value="submit"
@@ -132,27 +131,39 @@
             Submit
         </button>
 
-        {{-- Preview --}}
         <button type="button"
             onclick="openPreview()"
             class="px-5 py-2 rounded-lg border border-white/10 hover:bg-white/10 transition">
             Preview
         </button>
 
-        {{-- Cancel --}}
         <a href="{{ route('articles.index') }}"
            class="px-5 py-2 rounded-lg border border-white/10 hover:bg-white/10 transition">
             Cancel
         </a>
-
     </div>
 
 </div>
 
+{{-- Modal Preview --}}
+<div id="previewModal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center overflow-auto transition-opacity duration-300">
+    <div class="bg-gray-900 rounded-xl max-w-3xl w-full mx-4 md:mx-0 p-6 relative transform transition-transform duration-300">
+        <button type="button" onclick="closePreview()" 
+                class="absolute top-3 right-3 text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+        
+        <div class="mb-4">
+            <img id="modal-cover" src="" alt="Cover" class="w-full h-64 object-cover rounded-lg mb-4 hidden">
+            <h2 id="modal-title" class="text-2xl font-bold mb-2"></h2>
+            <p id="modal-summary" class="text-gray-400 mb-4"></p>
+            <div id="modal-content" class="prose prose-invert max-w-full overflow-auto"></div>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
 let editorInstance;
+let coverFileData = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     ClassicEditor
@@ -168,23 +179,61 @@ document.addEventListener('DOMContentLoaded', function () {
             editorInstance = editor;
         })
         .catch(error => console.error(error));
+
+    // Cover input preview
+    const coverInput = document.getElementById('preview-cover-input');
+    coverInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                coverFileData = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            coverFileData = null;
+        }
+    });
 });
 
 function openPreview() {
-    document.getElementById('modal-title').innerText =
-        document.getElementById('preview-title').value;
+    const modal = document.getElementById('previewModal');
 
-    document.getElementById('modal-summary').innerText =
-        document.getElementById('preview-summary').value;
+    // Title
+    document.getElementById('modal-title').innerText = document.getElementById('preview-title').value;
 
-    document.getElementById('modal-content').innerHTML =
-        editorInstance.getData();
+    // Summary
+    document.getElementById('modal-summary').innerText = document.getElementById('preview-summary').value;
 
-    document.getElementById('previewModal').classList.remove('hidden');
+    // Content
+    document.getElementById('modal-content').innerHTML = editorInstance.getData();
+
+    // Cover
+    const modalCover = document.getElementById('modal-cover');
+    if (coverFileData) {
+        modalCover.src = coverFileData;
+        modalCover.classList.remove('hidden');
+    } else {
+        modalCover.classList.add('hidden');
+    }
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.firstElementChild.style.transform = 'translateY(0)';
+    }, 10);
 }
 
 function closePreview() {
-    document.getElementById('previewModal').classList.add('hidden');
+    const modal = document.getElementById('previewModal');
+    modal.style.opacity = '0';
+    modal.firstElementChild.style.transform = 'translateY(-20px)';
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }, 200); // sesuaikan dengan durasi animasi
 }
 </script>
 
@@ -215,6 +264,15 @@ function closePreview() {
 .ck.ck-toolbar .ck-button.ck-on .ck-icon {
     color: #10b981 !important;
     fill: #10b981 !important;
+}
+
+/* Modal scrollbar */
+#previewModal::-webkit-scrollbar {
+    width: 6px;
+}
+#previewModal::-webkit-scrollbar-thumb {
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 3px;
 }
 </style>
 @endpush

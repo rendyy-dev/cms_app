@@ -84,7 +84,7 @@
         </a>
 
         <!-- Album -->
-        <a href=""
+        <a href="{{ route('admin.albums.index') }}"
            class="block px-4 py-3 rounded-lg transition flex items-center gap-3
            {{ request()->routeIs('albums.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"

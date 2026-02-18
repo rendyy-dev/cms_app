@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Traits\HasSlug;
 
 class ArticleController extends Controller
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, HasSlug;
 
     public function index()
     {
@@ -19,12 +19,12 @@ class ArticleController extends Controller
         if ($user->hasAnyRole(['admin', 'super_admin', 'editor'])) {
             $articles = Article::with(['author', 'category'])
                 ->latest()
-                ->get();
+                ->paginate(10);
         } else {
             $articles = Article::with(['author', 'category'])
                 ->where('user_id', $user->id)
                 ->latest()
-                ->get();
+                ->paginate(10);
         }
 
         return view('articles.index', compact('articles'));
@@ -55,36 +55,25 @@ class ArticleController extends Controller
             'image' => 'nullable|image|max:2048',
         ]);
 
-        // Upload cover
         if ($request->hasFile('cover')) {
             $data['cover'] = $request->file('cover')->store('covers', 'public');
         }
 
-        // Upload image (optional)
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('images', 'public');
         }
 
-        // Generate unique slug
-        $data['slug'] = $this->generateUniqueSlug($data['title']);
+        // 🔥 PAKAI TRAIT
+        $data['slug'] = $this->generateUniqueSlug(Article::class, $data['title']);
 
         $data['user_id'] = auth()->id();
-
-        $data['status'] = $request->action === 'submit'
-            ? 'pending'
-            : 'draft';
-
+        $data['status'] = $request->action === 'submit' ? 'pending' : 'draft';
 
         Article::create($data);
 
         return redirect()
             ->route('articles.index')
-            ->with('success', 'Article saved as draft.');
-    }
-
-    public function show(Article $article)
-    {
-        return view('articles.show', compact('article'));
+            ->with('success', 'Article saved.');
     }
 
     public function edit(Article $article)
@@ -120,63 +109,19 @@ class ArticleController extends Controller
             $data['image'] = $request->file('image')->store('images', 'public');
         }
 
-        // Slug hanya berubah kalau belum published
         if ($article->status !== 'published') {
-            $data['slug'] = $this->generateUniqueSlug($data['title'], $article->id);
+            $data['slug'] = $this->generateUniqueSlug(
+                Article::class,
+                $data['title'],
+                $article->id
+            );
         }
-
-        // Tentukan status berdasarkan tombol
-        if ($request->action === 'submit') {
-            $data['status'] = 'pending';
-        } elseif ($request->action === 'draft') {
-            $data['status'] = 'draft';
-        }
-
 
         $article->update($data);
 
         return redirect()
             ->route('articles.index')
             ->with('success', 'Article updated.');
-    }
-
-    public function submit(Article $article)
-    {
-        $this->authorize('submit', $article);
-
-        $article->update([
-            'status' => 'pending',
-        ]);
-
-        return back()->with('success', 'Article submitted for review.');
-    }
-
-    public function approve(Article $article)
-    {
-        $this->authorize('approve', $article);
-
-        $article->update([
-            'status' => 'published',
-            'published_at' => now(),
-        ]);
-
-        return back()->with('success', 'Article approved and published.');
-    }
-
-    public function reject(Request $request, Article $article)
-    {
-        $this->authorize('reject', $article);
-
-        $request->validate([
-            'rejection_reason' => 'required|string'
-        ]);
-
-        $article->update([
-            'status' => 'rejected',
-            'rejection_reason' => $request->rejection_reason,
-        ]);
-
-        return back()->with('success', 'Article rejected.');
     }
 
     public function destroy(Article $article)
@@ -186,28 +131,5 @@ class ArticleController extends Controller
         $article->delete();
 
         return back()->with('success', 'Article deleted.');
-    }
-
-    /**
-     * Generate Unique Slug
-     */
-    private function generateUniqueSlug($title, $ignoreId = null)
-    {
-        $slug = Str::slug($title);
-        $originalSlug = $slug;
-        $count = 1;
-
-        while (
-            Article::where('slug', $slug)
-                ->when($ignoreId, function ($query) use ($ignoreId) {
-                    $query->where('id', '!=', $ignoreId);
-                })
-                ->exists()
-        ) {
-            $slug = $originalSlug . '-' . $count;
-            $count++;
-        }
-
-        return $slug;
     }
 }

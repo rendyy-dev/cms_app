@@ -9,6 +9,8 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PublicArticleController;
+use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\PhotoController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -74,6 +76,23 @@ Route::middleware(['auth','role:super_admin,admin'])
         Route::resource('categories', CategoryController::class);
     });
 
+// Manajemen Album    
+Route::middleware(['auth','role:super_admin,admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::resource('albums', AlbumController::class);
+
+        Route::delete('photos/{photo}', [AlbumController::class, 'deletePhoto'])
+        ->name('photos.delete');
+
+        Route::post('albums/{album}/photos', [PhotoController::class, 'store'])
+        ->name('photos.store');
+
+        Route::get('albums/{album}/photos/create', [PhotoController::class, 'create'])
+        ->name('photos.create');
+
+    });
 
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])
     ->name('auth.google');
