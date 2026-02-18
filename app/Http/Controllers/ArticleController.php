@@ -40,41 +40,43 @@ class ArticleController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $this->authorize('create', Article::class);
+{
+    $this->authorize('create', Article::class);
 
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'summary' => 'nullable|string',
-            'content' => 'required|string',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string',
-            'cover' => 'nullable|image|max:2048',
-            'image' => 'nullable|image|max:2048',
-        ]);
+    // Validasi
+    $data = $request->validate([
+        'title' => 'required|string|max:255',
+        'category_id' => 'required|exists:categories,id',
+        'summary' => 'nullable|string|max:500',
+        'content' => 'required|string',
+        'meta_title' => 'nullable|string|max:255',
+        'meta_description' => 'nullable|string|max:500',
+        'meta_keywords' => 'nullable|string|max:255',
+        'cover' => 'nullable|image|max:2048',
+        'image' => 'nullable|image|max:2048',
+    ]);
 
-        if ($request->hasFile('cover')) {
-            $data['cover'] = $request->file('cover')->store('covers', 'public');
-        }
-
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images', 'public');
-        }
-
-        // 🔥 PAKAI TRAIT
-        $data['slug'] = $this->generateUniqueSlug(Article::class, $data['title']);
-
-        $data['user_id'] = auth()->id();
-        $data['status'] = $request->action === 'submit' ? 'pending' : 'draft';
-
-        Article::create($data);
-
-        return redirect()
-            ->route('articles.index')
-            ->with('success', 'Article saved.');
+    if ($request->hasFile('cover')) {
+        $data['cover'] = $request->file('cover')->store('covers', 'public');
     }
+
+    if ($request->hasFile('image')) {
+        $data['image'] = $request->file('image')->store('images', 'public');
+    }
+
+    $data['slug'] = $this->generateUniqueSlug(Article::class, $data['title']);
+    $data['user_id'] = auth()->id();
+
+    // Tombol action
+    $action = $request->input('action', 'draft');
+    $data['status'] = $action === 'submit' ? 'pending' : 'draft';
+
+    Article::create($data);
+
+    return redirect()
+        ->route('articles.index')
+        ->with('success', 'Article saved.');
+}
 
     public function edit(Article $article)
     {
@@ -92,11 +94,11 @@ class ArticleController extends Controller
         $data = $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'summary' => 'nullable|string',
+            'summary' => 'nullable|string|max:500',
             'content' => 'required|string',
             'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string',
-            'meta_keywords' => 'nullable|string',
+            'meta_description' => 'nullable|string|max:500',
+            'meta_keywords' => 'nullable|string|max:255',
             'cover' => 'nullable|image|max:2048',
             'image' => 'nullable|image|max:2048',
         ]);
@@ -110,12 +112,11 @@ class ArticleController extends Controller
         }
 
         if ($article->status !== 'published') {
-            $data['slug'] = $this->generateUniqueSlug(
-                Article::class,
-                $data['title'],
-                $article->id
-            );
+            $data['slug'] = $this->generateUniqueSlug(Article::class, $data['title'], $article->id);
         }
+
+        $action = $request->input('action', 'draft');
+        $data['status'] = $action === 'submit' ? 'pending' : 'draft';
 
         $article->update($data);
 
@@ -132,4 +133,39 @@ class ArticleController extends Controller
 
         return back()->with('success', 'Article deleted.');
     }
+
+    public function approve(Article $article)
+    {
+        $this->authorize('update', $article);
+
+        // Update status jadi published & set tanggal publish sekarang
+        $article->update([
+            'status' => 'published',
+            'published_at' => now(),
+            'rejection_reason' => null, // hapus alasan reject jika sebelumnya ada
+        ]);
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', 'Article published successfully.');
+    }
+
+    public function reject(Request $request, Article $article)
+    {
+        $this->authorize('update', $article);
+
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        $article->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', 'Article rejected.');
+    }
+
 }

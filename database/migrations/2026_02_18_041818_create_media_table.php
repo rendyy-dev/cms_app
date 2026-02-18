@@ -11,19 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('photos', function (Blueprint $table) {
+        Schema::create('media', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('album_id')
+                ->nullable()
                 ->constrained()
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
-            $table->string('image');
-            $table->string('caption')->nullable();
+            $table->string('file_path')->nullable(); // bisa null kalau video URL
+            $table->string('video_url')->nullable(); // bisa null kalau image
+            $table->enum('type', ['image', 'video']);
+            $table->string('title')->nullable();
+            $table->text('description')->nullable();
             $table->integer('order')->default(0);
+            $table->boolean('is_featured')->default(false);
 
             $table->timestamps();
 
+            $table->index('type');
             $table->index('order');
         });
 
@@ -34,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('photos');
+        Schema::dropIfExists('media');
     }
 };

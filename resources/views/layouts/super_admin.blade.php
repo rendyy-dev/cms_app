@@ -86,7 +86,7 @@
         <!-- Album -->
         <a href="{{ route('admin.albums.index') }}"
            class="block px-4 py-3 rounded-lg transition flex items-center gap-3
-           {{ request()->routeIs('albums.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
+           {{ request()->routeIs('admin.albums.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -100,7 +100,7 @@
         <!-- Categories -->
         <a href="{{ route('admin.categories.index') }}"
            class="block px-4 py-3 rounded-lg transition flex items-center gap-3
-           {{ request()->routeIs('categories.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
+           {{ request()->routeIs('admin.categories.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -110,9 +110,9 @@
         </a>
 
         <!-- Galleries -->
-        <a href=""
+        <a href="{{ route('admin.media.index') }}"
            class="block px-4 py-3 rounded-lg transition flex items-center gap-3
-           {{ request()->routeIs('galleries.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
+           {{ request()->routeIs('admin.media.*') ? 'bg-white/10' : 'hover:bg-white/10' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

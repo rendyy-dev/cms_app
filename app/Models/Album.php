@@ -23,8 +23,9 @@ class Album extends Model
         'is_featured' => 'boolean',
     ];
 
-    public function photos()
+    public function media()
     {
-        return $this->hasMany(Photo::class)->orderBy('order');
+        return $this->hasMany(\App\Models\Media::class);
     }
+
 }
