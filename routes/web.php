@@ -11,6 +11,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\EbookController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -95,7 +96,18 @@ Route::middleware(['auth','role:super_admin,admin'])
         ->parameters([
             'media' => 'media'
         ]);
+    });
 
+// Manajemen Ebook
+Route::prefix('admin')
+    ->middleware(['auth', 'role:super_admin,admin'])
+    ->name('admin.')
+    ->group(function () {
+        Route::get('ebooks/trashed', [EbookController::class, 'trashed'])->name('ebooks.trashed');
+        Route::post('ebooks/{id}/restore', [EbookController::class, 'restore'])->name('ebooks.restore');
+        Route::delete('ebooks/{id}/force-delete', [EbookController::class, 'forceDelete'])->name('ebooks.forceDelete');
+
+        Route::resource('ebooks', EbookController::class);
     });
 
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])

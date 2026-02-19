@@ -3,6 +3,16 @@ import './bootstrap'
 import Alpine from 'alpinejs'
 import intersect from '@alpinejs/intersect'
 
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
+
+document.addEventListener('DOMContentLoaded', function() {
+    flatpickr("[data-datepicker]", {
+        dateFormat: "Y-m-d",
+        allowInput: true,
+    });
+});
+
 window.Alpine = Alpine
 Alpine.plugin(intersect)
 
