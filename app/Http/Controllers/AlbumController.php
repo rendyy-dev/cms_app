@@ -112,4 +112,46 @@ class AlbumController extends Controller
 
         return back()->with('success', 'Album deleted.');
     }
+
+    // =============================
+    // TRASH
+    // =============================
+    public function trash()
+    {
+        $albums = Album::onlyTrashed()
+            ->orderBy('order')
+            ->paginate(10);
+
+        return view('albums.trash', compact('albums'));
+    }
+
+    // =============================
+    // RESTORE
+    // =============================
+    public function restore($id)
+    {
+        $album = Album::onlyTrashed()->findOrFail($id);
+        $album->restore();
+
+        return redirect()->route('admin.albums.trash')
+            ->with('success', 'Album berhasil direstore.');
+    }
+
+    // =============================
+    // FORCE DELETE
+    // =============================
+    public function forceDelete($id)
+    {
+        $album = Album::onlyTrashed()->findOrFail($id);
+
+        if ($album->cover) {
+            Storage::disk('public')->delete($album->cover);
+        }
+
+        $album->forceDelete();
+
+        return redirect()->route('admin.albums.trash')
+            ->with('success', 'Album dihapus permanen.');
+    }
+
 }

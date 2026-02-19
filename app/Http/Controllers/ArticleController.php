@@ -40,43 +40,51 @@ class ArticleController extends Controller
     }
 
     public function store(Request $request)
-{
-    $this->authorize('create', Article::class);
+    {
+        $this->authorize('create', Article::class);
 
-    // Validasi
-    $data = $request->validate([
-        'title' => 'required|string|max:255',
-        'category_id' => 'required|exists:categories,id',
-        'summary' => 'nullable|string|max:500',
-        'content' => 'required|string',
-        'meta_title' => 'nullable|string|max:255',
-        'meta_description' => 'nullable|string|max:500',
-        'meta_keywords' => 'nullable|string|max:255',
-        'cover' => 'nullable|image|max:2048',
-        'image' => 'nullable|image|max:2048',
-    ]);
+        // Validasi
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'summary' => 'nullable|string|max:500',
+            'content' => 'required|string',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string|max:500',
+            'meta_keywords' => 'nullable|string|max:255',
+            'cover' => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:2048',
+        ]);
 
-    if ($request->hasFile('cover')) {
-        $data['cover'] = $request->file('cover')->store('covers', 'public');
+        if ($request->hasFile('cover')) {
+            $data['cover'] = $request->file('cover')->store('covers', 'public');
+        }
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('images', 'public');
+        }
+
+        $data['slug'] = $this->generateUniqueSlug(Article::class, $data['title']);
+        $data['user_id'] = auth()->id();
+
+        // Tombol action
+        $action = $request->input('action', 'draft');
+        $data['status'] = $action === 'submit' ? 'pending' : 'draft';
+
+        Article::create($data);
+
+        return redirect()
+            ->route('articles.index')
+            ->with('success', 'Article saved.');
     }
 
-    if ($request->hasFile('image')) {
-        $data['image'] = $request->file('image')->store('images', 'public');
+    public function show(Article $article)
+    {
+        $this->authorize('view', $article); // optional, pakai policy
+
+        return view('articles.show', compact('article'));
     }
 
-    $data['slug'] = $this->generateUniqueSlug(Article::class, $data['title']);
-    $data['user_id'] = auth()->id();
-
-    // Tombol action
-    $action = $request->input('action', 'draft');
-    $data['status'] = $action === 'submit' ? 'pending' : 'draft';
-
-    Article::create($data);
-
-    return redirect()
-        ->route('articles.index')
-        ->with('success', 'Article saved.');
-}
 
     public function edit(Article $article)
     {
@@ -166,6 +174,54 @@ class ArticleController extends Controller
         return redirect()
             ->route('articles.index')
             ->with('success', 'Article rejected.');
+    }
+
+    // =============================
+    // TRASH
+    // =============================
+    public function trash()
+    {
+        $user = auth()->user();
+
+        if ($user->hasAnyRole(['admin', 'super_admin', 'editor'])) {
+            $articles = Article::onlyTrashed()->with(['author', 'category'])->latest()->paginate(10);
+        } else {
+            $articles = Article::onlyTrashed()
+                ->where('user_id', $user->id)
+                ->with(['author', 'category'])
+                ->latest()
+                ->paginate(10);
+        }
+
+        return view('articles.trash', compact('articles'));
+    }
+
+    // =============================
+    // RESTORE
+    // =============================
+    public function restore($id)
+    {
+        $article = Article::onlyTrashed()->findOrFail($id);
+        $this->authorize('update', $article); // Pakai policy
+
+        $article->restore();
+
+        return redirect()->route('articles.trash')
+            ->with('success', 'Article berhasil direstore.');
+    }
+
+    // =============================
+    // FORCE DELETE
+    // =============================
+    public function forceDelete($id)
+    {
+        $article = Article::onlyTrashed()->findOrFail($id);
+        $this->authorize('delete', $article);
+
+        $article->forceDelete();
+
+        return redirect()->route('articles.trash')
+            ->with('success', 'Article dihapus permanen.');
     }
 
 }

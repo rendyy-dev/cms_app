@@ -19,19 +19,12 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">Galleries</h1>
+        <h1 class="text-2xl font-bold">Media Trash</h1>
 
-        <div class="flex gap-2">
-            <a href="{{ route('admin.media.create') }}"
-               class="px-4 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
-                + Tambah Media
-            </a>
-
-            <a href="{{ route('admin.media.trash') }}"
-               class="px-4 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition">
-                Sampah
-            </a>
-        </div>
+        <a href="{{ route('admin.media.index') }}"
+           class="px-4 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition">
+            Kembali ke Media
+        </a>
     </div>
 
     {{-- Flash messages --}}
@@ -76,21 +69,31 @@
                     </h3>
 
                     <div class="flex items-center justify-between pt-3">
-                        <a href="{{ route('admin.media.edit', $item) }}"
-                           class="text-sm text-emerald-400 hover:underline">
-                            Edit
-                        </a>
 
+                        {{-- Restore --}}
                         <button
                             @click="openModal(
-                                '{{ route('admin.media.destroy', $item) }}',
+                                '{{ route('admin.media.restore', $item->id) }}',
+                                'POST',
+                                'Yakin ingin mengembalikan media ini?'
+                            )"
+                            class="text-sm text-emerald-400 hover:underline"
+                        >
+                            Restore
+                        </button>
+
+                        {{-- Force Delete --}}
+                        <button
+                            @click="openModal(
+                                '{{ route('admin.media.forceDelete', $item->id) }}',
                                 'DELETE',
-                                'Yakin ingin menghapus media ini?'
+                                'Media ini akan dihapus permanen. Lanjutkan?'
                             )"
                             class="text-sm text-red-400 hover:underline"
                         >
-                            Hapus
+                            Hapus Permanen
                         </button>
+
                     </div>
                 </div>
 
@@ -102,9 +105,10 @@
     <div class="mt-10">
         {{ $media->links() }}
     </div>
+
     @else
         <div class="text-center text-gray-500 mt-20">
-            Belum ada media.
+            Tidak ada media di sampah.
         </div>
     @endif
 

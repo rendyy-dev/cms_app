@@ -109,6 +109,12 @@ Route::middleware(['auth','role:super_admin,admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+    // Trash routes
+        Route::get('categories/trash', [CategoryController::class, 'trash'])->name('categories.trash');
+        Route::post('categories/{id}/restore', [CategoryController::class, 'restore'])->name('categories.restore');
+        Route::delete('categories/{id}/force-delete', [CategoryController::class, 'forceDelete'])->name('categories.forceDelete');
+
         Route::resource('categories', CategoryController::class);
     });
 
@@ -117,7 +123,18 @@ Route::middleware(['auth','role:super_admin,admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+    // Trash Album
+        Route::get('albums/trash', [AlbumController::class, 'trash'])->name('albums.trash');
+        Route::post('albums/{id}/restore', [AlbumController::class, 'restore'])->name('albums.restore');
+        Route::delete('albums/{id}/force-delete', [AlbumController::class, 'forceDelete'])->name('albums.forceDelete');
+
         Route::resource('albums', AlbumController::class);
+
+        // Trash routes
+        Route::get('media/trash', [MediaController::class, 'trash'])->name('media.trash');
+        Route::post('media/{id}/restore', [MediaController::class, 'restore'])->name('media.restore');
+        Route::delete('media/{id}/force-delete', [MediaController::class, 'forceDelete'])->name('media.forceDelete');
 
         Route::resource('media', MediaController::class)
         ->parameters([
@@ -151,20 +168,21 @@ Route::middleware(['auth'])
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::resource('articles', ArticleController::class);
-
     Route::post('articles/{article}/submit', [ArticleController::class, 'submit'])
         ->name('articles.submit');
-
     Route::post('articles/{article}/publish', [ArticleController::class, 'publish'])
         ->name('articles.publish');
-
     Route::post('articles/{article}/approve', [ArticleController::class, 'approve'])
         ->name('articles.approve');
-
     Route::post('articles/{article}/reject', [ArticleController::class, 'reject'])
         ->name('articles.reject');
 
+    // Tambahkan route trash + restore + force delete dengan prefix "articles"
+    Route::get('articles/trash', [ArticleController::class, 'trash'])->name('articles.trash');
+    Route::post('articles/{id}/restore', [ArticleController::class, 'restore'])->name('articles.restore');
+    Route::delete('articles/{id}/force-delete', [ArticleController::class, 'forceDelete'])->name('articles.forceDelete');
+
+    Route::resource('articles', ArticleController::class);
 });
 
 require __DIR__.'/auth.php';

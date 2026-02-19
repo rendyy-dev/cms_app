@@ -19,48 +19,39 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">Albums</h1>
-
-        <div class="flex gap-2">
-            <a href="{{ route('admin.albums.create') }}"
-               class="px-4 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
-                + Tambah Album
-            </a>
-
-            <a href="{{ route('admin.albums.trash') }}"
-               class="px-4 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition">
-                Sampah
-            </a>
+        <div>
+            <h1 class="text-2xl font-bold text-emerald-400">Sampah Albums</h1>
+            <p class="text-gray-400 text-sm mt-1">
+                Album yang telah dihapus (soft delete)
+            </p>
         </div>
+
+        <a href="{{ route('admin.albums.index') }}"
+           class="px-4 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
+            Kembali
+        </a>
     </div>
 
-    {{-- Flash messages --}}
     @if(session('success'))
         <div class="mb-4 p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-lg">
             {{ session('success') }}
         </div>
     @endif
 
-    @if(session('error'))
-        <div class="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
-            {{ session('error') }}
-        </div>
-    @endif
-
     {{-- Table --}}
     <div class="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
         <table class="w-full text-sm">
-            <thead class="bg-white/10 text-gray-400">
+            <thead class="bg-white/10 text-left">
                 <tr>
                     <th class="px-6 py-4">Cover</th>
                     <th class="px-6 py-4">Title</th>
-                    <th class="px-6 py-4">Featured</th>
                     <th class="px-6 py-4 text-right">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-white/5">
+
+            <tbody>
                 @forelse($albums as $album)
-                    <tr class="hover:bg-white/5 transition">
+                    <tr class="border-t border-white/10 hover:bg-white/5 transition">
                         <td class="px-6 py-4">
                             @if($album->cover)
                                 <img src="{{ asset('storage/'.$album->cover) }}"
@@ -70,46 +61,40 @@
                             @endif
                         </td>
 
-                        <td class="px-6 py-4 font-medium">{{ $album->title }}</td>
-
-                        <td class="px-6 py-4">
-                            @if($album->is_featured)
-                                <span class="px-2 py-1 bg-emerald-500 text-black text-xs rounded">
-                                    Yes
-                                </span>
-                            @else
-                                <span class="text-gray-500 text-xs">No</span>
-                            @endif
+                        <td class="px-6 py-4 font-medium">
+                            {{ $album->title }}
                         </td>
 
-                        <td class="px-6 py-4 text-right flex justify-end gap-2">
+                        <td class="px-6 py-4 text-right space-x-2">
 
-                            <a href="{{ route('admin.albums.show', $album) }}"
-                               class="px-3 py-1 bg-white/10 rounded-lg text-sm hover:bg-white/20">
-                                View
-                            </a>
-
-                            <a href="{{ route('admin.albums.edit', $album) }}"
-                               class="px-3 py-1 bg-white/10 rounded-lg text-sm hover:bg-white/20">
-                                Edit
-                            </a>
-
+                            {{-- Restore --}}
                             <button
                                 @click="openModal(
-                                    '{{ route('admin.albums.destroy', $album) }}',
+                                    '{{ route('admin.albums.restore', $album->id) }}',
+                                    'POST',
+                                    'Yakin ingin merestore album ini?'
+                                )"
+                                class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition">
+                                Restore
+                            </button>
+
+                            {{-- Force Delete --}}
+                            <button
+                                @click="openModal(
+                                    '{{ route('admin.albums.forceDelete', $album->id) }}',
                                     'DELETE',
-                                    'Album dan semua foto akan terhapus. Lanjutkan?'
+                                    'Album akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.'
                                 )"
                                 class="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition">
-                                Hapus
+                                Hapus Permanen
                             </button>
 
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-6 text-center text-gray-400">
-                            Belum ada album.
+                        <td colspan="3" class="px-6 py-6 text-center text-gray-400">
+                            Tidak ada album di sampah.
                         </td>
                     </tr>
                 @endforelse
@@ -131,23 +116,30 @@
             @click.away="open = false"
             class="bg-gray-900 border border-white/10 rounded-xl w-full max-w-md p-6"
         >
-            <h2 class="text-lg font-semibold text-white mb-4">Konfirmasi</h2>
+            <h2 class="text-lg font-semibold text-white mb-4">
+                Konfirmasi
+            </h2>
+
             <p class="text-gray-400 text-sm mb-6" x-text="message"></p>
 
             <form :action="actionUrl" method="POST">
                 @csrf
+
                 <template x-if="method === 'DELETE'">
                     <input type="hidden" name="_method" value="DELETE">
                 </template>
 
                 <div class="flex justify-end gap-3">
-                    <button type="button"
-                            @click="open = false"
-                            class="px-4 py-2 text-sm rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition">
+                    <button 
+                        type="button"
+                        @click="open = false"
+                        class="px-4 py-2 text-sm rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition">
                         Batal
                     </button>
-                    <button type="submit"
-                            class="px-4 py-2 text-sm rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-semibold transition">
+
+                    <button 
+                        type="submit"
+                        class="px-4 py-2 text-sm rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-semibold transition">
                         Ya, Lanjutkan
                     </button>
                 </div>

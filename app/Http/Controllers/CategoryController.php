@@ -47,14 +47,6 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Category $category)
@@ -84,7 +76,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Soft delete the specified resource from storage.
      */
     public function destroy(Category $category)
     {
@@ -93,5 +85,40 @@ class CategoryController extends Controller
         return redirect()
             ->route('admin.categories.index')
             ->with('success', 'Category berhasil dihapus');
+    }
+
+    /**
+     * Display the trashed categories.
+     */
+    public function trash()
+    {
+        $categories = Category::onlyTrashed()->latest()->paginate(10);
+        return view('categories.trash', compact('categories'));
+    }
+
+    /**
+     * Restore a soft deleted category.
+     */
+    public function restore($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+        $category->restore();
+
+        return redirect()
+            ->route('admin.categories.trash')
+            ->with('success', 'Category berhasil dikembalikan');
+    }
+
+    /**
+     * Permanently delete a category.
+     */
+    public function forceDelete($id)
+    {
+        $category = Category::onlyTrashed()->findOrFail($id);
+        $category->forceDelete();
+
+        return redirect()
+            ->route('admin.categories.trash')
+            ->with('success', 'Category berhasil dihapus permanen');
     }
 }

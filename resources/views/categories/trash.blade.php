@@ -19,19 +19,17 @@
 
     {{-- Header --}}
     <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">Albums</h1>
-
-        <div class="flex gap-2">
-            <a href="{{ route('admin.albums.create') }}"
-               class="px-4 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
-                + Tambah Album
-            </a>
-
-            <a href="{{ route('admin.albums.trash') }}"
-               class="px-4 py-2 bg-gray-700 text-white rounded-lg font-semibold hover:bg-gray-600 transition">
-                Sampah
-            </a>
+        <div>
+            <h1 class="text-2xl font-bold">Sampah Categories</h1>
+            <p class="text-gray-400 text-sm mt-1">
+                Category yang telah dihapus (soft delete)
+            </p>
         </div>
+
+        <a href="{{ route('admin.categories.index') }}"
+           class="px-4 py-2 bg-emerald-500 text-black rounded-lg font-semibold hover:bg-emerald-400 transition">
+            Kembali
+        </a>
     </div>
 
     {{-- Flash messages --}}
@@ -52,56 +50,47 @@
         <table class="w-full text-sm">
             <thead class="bg-white/10 text-gray-400">
                 <tr>
-                    <th class="px-6 py-4">Cover</th>
-                    <th class="px-6 py-4">Title</th>
-                    <th class="px-6 py-4">Featured</th>
+                    <th class="px-6 py-4">Nama</th>
+                    <th class="px-6 py-4">Deskripsi</th>
+                    <th class="px-6 py-4">Slug</th>
                     <th class="px-6 py-4 text-right">Aksi</th>
                 </tr>
             </thead>
+
             <tbody class="divide-y divide-white/5">
-                @forelse($albums as $album)
+                @forelse($categories as $category)
                     <tr class="hover:bg-white/5 transition">
-                        <td class="px-6 py-4">
-                            @if($album->cover)
-                                <img src="{{ asset('storage/'.$album->cover) }}"
-                                     class="w-16 h-16 object-cover rounded-lg">
-                            @else
-                                <div class="w-16 h-16 bg-white/10 rounded-lg"></div>
-                            @endif
+                        <td class="px-6 py-4 font-semibold">{{ $category->name }}</td>
+                        <td class="px-6 py-4 text-gray-400 max-w-xs truncate">
+                            {{ $category->description ?? '-' }}
                         </td>
-
-                        <td class="px-6 py-4 font-medium">{{ $album->title }}</td>
-
                         <td class="px-6 py-4">
-                            @if($album->is_featured)
-                                <span class="px-2 py-1 bg-emerald-500 text-black text-xs rounded">
-                                    Yes
-                                </span>
-                            @else
-                                <span class="text-gray-500 text-xs">No</span>
-                            @endif
+                            <span class="px-3 py-1 text-xs bg-emerald-500/20 text-emerald-400 rounded-full">
+                                {{ $category->slug }}
+                            </span>
                         </td>
-
                         <td class="px-6 py-4 text-right flex justify-end gap-2">
 
-                            <a href="{{ route('admin.albums.show', $album) }}"
-                               class="px-3 py-1 bg-white/10 rounded-lg text-sm hover:bg-white/20">
-                                View
-                            </a>
-
-                            <a href="{{ route('admin.albums.edit', $album) }}"
-                               class="px-3 py-1 bg-white/10 rounded-lg text-sm hover:bg-white/20">
-                                Edit
-                            </a>
-
+                            {{-- Restore --}}
                             <button
                                 @click="openModal(
-                                    '{{ route('admin.albums.destroy', $album) }}',
+                                    '{{ route('admin.categories.restore', $category->id) }}',
+                                    'POST',
+                                    'Yakin ingin merestore category ini?'
+                                )"
+                                class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition">
+                                Restore
+                            </button>
+
+                            {{-- Force Delete --}}
+                            <button
+                                @click="openModal(
+                                    '{{ route('admin.categories.forceDelete', $category->id) }}',
                                     'DELETE',
-                                    'Album dan semua foto akan terhapus. Lanjutkan?'
+                                    'Category akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.'
                                 )"
                                 class="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition">
-                                Hapus
+                                Hapus Permanen
                             </button>
 
                         </td>
@@ -109,7 +98,7 @@
                 @empty
                     <tr>
                         <td colspan="4" class="px-6 py-6 text-center text-gray-400">
-                            Belum ada album.
+                            Tidak ada category di sampah.
                         </td>
                     </tr>
                 @endforelse
@@ -118,7 +107,7 @@
     </div>
 
     <div class="mt-6">
-        {{ $albums->links() }}
+        {{ $categories->links() }}
     </div>
 
     {{-- Modal --}}

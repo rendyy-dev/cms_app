@@ -1,6 +1,19 @@
 @extends('layouts.super_admin')
 
 @section('content')
+<div x-data="{
+    open:false,
+    actionUrl:'',
+    method:'POST',
+    message:'',
+    openModal(url, methodType, msg){
+        this.actionUrl = url;
+        this.method = methodType;
+        this.message = msg;
+        this.open = true;
+    }
+}" class="max-w-7xl mx-auto">
+
 <div class="flex items-center justify-between mb-6">
     <div>
         <h1 class="text-3xl font-bold text-emerald-400">Article</h1>
@@ -9,12 +22,19 @@
         </p>
     </div>
 
-    @can('create', App\Models\Article::class)
-        <a href="{{ route('articles.create') }}"
-           class="px-4 py-2 rounded-lg bg-emerald-500 text-black font-semibold hover:bg-emerald-400 transition">
-            + New Article
+    <div class="flex gap-2">
+        @can('create', App\Models\Article::class)
+            <a href="{{ route('articles.create') }}"
+               class="px-4 py-2 rounded-lg bg-emerald-500 text-black font-semibold hover:bg-emerald-400 transition">
+                + New Article
+            </a>
+        @endcan
+
+        <a href="{{ route('articles.trash') }}"
+           class="px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold hover:bg-gray-600 transition">
+            Sampah
         </a>
-    @endcan
+    </div>
 </div>
 
 <div class="bg-black/60 border border-white/10 rounded-xl overflow-hidden">
@@ -54,13 +74,10 @@
                         {{ ucfirst($article->status) }}
                     </span>
 
-                    {{-- Tooltip & modal for rejected reason --}}
                     @if($article->isRejected() && $article->rejection_reason)
                         <div class="group inline-block relative ml-2 cursor-pointer">
                             <button onclick="openReasonModal('{{ addslashes($article->rejection_reason) }}')"
                                     class="text-red-400">ⓘ</button>
-
-                            {{-- Tooltip on hover --}}
                             <div class="absolute left-0 mt-2 w-64 p-3 rounded-lg bg-black border border-white/10 text-xs text-gray-300
                                         opacity-0 group-hover:opacity-100 transition pointer-events-none z-50">
                                 {{ Str::limit($article->rejection_reason, 50) }}
@@ -75,7 +92,7 @@
                 </td>
 
                 {{-- Actions --}}
-                <td class="px-6 py-4 text-right space-x-3">
+                <td class="px-6 py-4 text-right flex gap-2 justify-end">
 
                     {{-- Edit --}}
                     @can('update', $article)
@@ -87,7 +104,7 @@
                         @endif
                     @endcan
 
-                    {{-- Submit (Draft or Rejected) --}}
+                    {{-- Submit --}}
                     @can('submit', $article)
                         @if($article->status === 'draft' || $article->status === 'rejected')
                             <form action="{{ route('articles.submit', $article) }}" method="POST" class="inline">
@@ -99,7 +116,7 @@
                         @endif
                     @endcan
 
-                    {{-- Approve (Pending only) --}}
+                    {{-- Approve --}}
                     @can('approve', $article)
                         @if($article->status === 'pending')
                             <form action="{{ route('articles.approve', $article) }}" method="POST" class="inline">
@@ -111,7 +128,7 @@
                         @endif
                     @endcan
 
-                    {{-- Reject (Pending only) --}}
+                    {{-- Reject --}}
                     @can('reject', $article)
                         @if($article->status === 'pending')
                             <button onclick="openRejectModal({{ $article->id }})"
@@ -124,9 +141,9 @@
                     {{-- Delete --}}
                     @can('delete', $article)
                         <form x-data
-                            action="{{ route('articles.destroy', $article) }}"
-                            method="POST"
-                            class="inline">
+                              action="{{ route('articles.destroy', $article) }}"
+                              method="POST"
+                              class="inline">
                             @csrf
                             @method('DELETE')
 
@@ -136,9 +153,7 @@
                                     'Yakin ingin menghapus article {{ $article->title }}?',
                                     () => $el.closest('form').submit()
                                 )"
-                                class="px-4 py-2 rounded-lg 
-                                    bg-red-500/80 hover:bg-red-400 
-                                    text-black font-semibold text-xs transition">
+                                class="px-4 py-2 rounded-lg bg-red-500/80 hover:bg-red-400 text-black font-semibold text-xs transition">
                                 Hapus
                             </button>
                         </form>
@@ -155,6 +170,10 @@
         @endforelse
         </tbody>
     </table>
+</div>
+
+<div class="mt-6">
+    {{ $articles->links() }}
 </div>
 
 {{-- REJECT MODAL --}}
@@ -217,4 +236,5 @@ function closeReasonModal() {
 </script>
 @endpush
 
+</div>
 @endsection

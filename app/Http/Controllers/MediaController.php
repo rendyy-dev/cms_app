@@ -129,4 +129,32 @@ class MediaController extends Controller
 
         return back()->with('success', 'Media berhasil dihapus.');
     }
+
+    public function trash()
+    {
+        $media = Media::onlyTrashed()->with('album')->latest()->paginate(12);
+        return view('media.trash', compact('media'));
+    }
+
+    public function restore($id)
+    {
+        $item = Media::onlyTrashed()->findOrFail($id);
+        $item->restore();
+
+        return redirect()->route('admin.media.trash')
+                        ->with('success', 'Media berhasil dikembalikan.');
+    }
+
+    public function forceDelete($id)
+    {
+        $item = Media::onlyTrashed()->findOrFail($id);
+        if($item->file_path){
+            Storage::disk('public')->delete($item->file_path);
+        }
+        $item->forceDelete();
+
+        return redirect()->route('admin.media.trash')
+                        ->with('success', 'Media berhasil dihapus permanen.');
+    }
+
 }
