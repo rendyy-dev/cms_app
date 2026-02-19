@@ -93,4 +93,31 @@ class RoleController extends Controller
 
         return back()->with('success', 'Role Berhasil di Hapus.');
     }
+
+    public function trash()
+    {
+        $roles = Role::onlyTrashed()->latest()->paginate(10);
+        return view('super_admin.roles.trash', compact('roles'));
+    }
+
+    public function restore($id)
+    {
+        $role = Role::onlyTrashed()->findOrFail($id);
+
+        $role->restore();
+
+        return redirect()->route('super_admin.roles.trash')
+            ->with('success', 'Role berhasil direstore.');
+    }
+
+    public function forceDelete($id)
+    {
+        $role = Role::onlyTrashed()->findOrFail($id);
+
+        $role->forceDelete();
+
+        return redirect()->route('super_admin.roles.trash')
+            ->with('success', 'Role dihapus permanen.');
+    }
+
 }

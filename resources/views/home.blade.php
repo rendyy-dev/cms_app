@@ -108,7 +108,7 @@
                     </p>
                 </div>
 
-                <a href="" 
+                <a href="{{ route('public.ebooks.index') }}" 
                    class="inline-flex items-center text-sm text-gray-300 group-hover:text-emerald-400 transition">
                     Selengkapnya
                     <span class="ml-2 transition group-hover:translate-x-1">→</span>
@@ -150,7 +150,7 @@
                     </p>
                 </div>
 
-                <a href="" 
+                <a href="{{ route('public.gallery.index') }}" 
                    class="inline-flex items-center text-sm text-gray-300 group-hover:text-emerald-400 transition">
                     Selengkapnya
                     <span class="ml-2 transition group-hover:translate-x-1">→</span>

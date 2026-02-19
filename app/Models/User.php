@@ -32,11 +32,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'profile_completed',
     ];
 
-    protected $casts = [
-        'profile_completed' => 'boolean',
-        'email_verified_at' => 'datetime',
-    ];
-
     protected $dates = ['deleted_at'];
 
     /**

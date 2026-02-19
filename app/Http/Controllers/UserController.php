@@ -115,7 +115,7 @@ class UserController extends Controller
     // Restore
     public function restoreUser($id)
     {
-        $user = User::withTrashed()->find($id);
+        $user = User::withTrashed()->findOrFail($id);
         $user->restore(); // kembali normal
         return redirect()->back()->with('success', 'User berhasil direstore');
     }
@@ -123,7 +123,7 @@ class UserController extends Controller
     // Force Delete
     public function forceDeleteUser($id)
     {
-        $user = User::withTrashed()->find($id);
+        $user = User::withTrashed()->findOrFail($id);
         $user->forceDelete(); // hapus permanen
         return redirect()->back()->with('success', 'User dihapus permanen');
     }

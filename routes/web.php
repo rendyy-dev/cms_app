@@ -12,6 +12,8 @@ use App\Http\Controllers\PublicArticleController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\EbookController;
+use App\Http\Controllers\PublicEbookController;
+use App\Http\Controllers\PublicGalleryController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,6 +32,21 @@ Route::get('/dashboard', function () {
 
 Route::get('/article', [PublicArticleController::class, 'index'])->name('public.articles.index');
 Route::get('/article/{slug}', [PublicArticleController::class, 'show'])->name('public.articles.show');
+
+Route::get('/ebooks', [PublicEbookController::class, 'index'])
+    ->name('public.ebooks.index');
+
+Route::get('/ebooks/{slug}', [PublicEbookController::class, 'show'])
+    ->name('public.ebooks.show');
+
+Route::get('/ebooks/{slug}/download', [PublicEbookController::class, 'download'])
+    ->name('public.ebooks.download');
+
+Route::get('/gallery', [PublicGalleryController::class, 'index'])
+    ->name('public.gallery.index');
+
+Route::get('/gallery/{slug}', [PublicGalleryController::class, 'show'])
+    ->name('public.gallery.show');
 
 // Profile routes
 Route::middleware('auth')->group(function () {
@@ -58,6 +75,16 @@ Route::prefix('super-admin')
         Route::patch('/profile/password', 
             [SuperAdminController::class, 'updatePassword']
         )->name('password.update');
+
+        Route::get('roles/trash', [RoleController::class, 'trash'])
+            ->name('roles.trash');
+
+        Route::post('roles/{id}/restore', [RoleController::class, 'restore'])
+            ->name('roles.restore');
+
+        Route::delete('roles/{id}/force-delete', [RoleController::class, 'forceDelete'])
+            ->name('roles.forceDelete');
+
 
         Route::resource('roles', RoleController::class);
 });

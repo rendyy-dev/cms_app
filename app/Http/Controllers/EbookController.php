@@ -28,23 +28,37 @@ class EbookController extends Controller
             'author' => 'nullable|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
-            'file' => 'required|mimes:pdf,epub|max:51200', // max 10MB
+            'cover' => 'nullable|image|max:2048',
+            'file' => 'required|mimes:pdf,epub|max:51200',
+            'access_type' => 'required|in:free,login',
             'published_at' => 'nullable|date',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         $filePath = $request->file('file')->store('ebooks', 'public');
+
+        $coverPath = null;
+        if ($request->hasFile('cover')) {
+            $coverPath = $request->file('cover')->store('ebook-covers', 'public');
+        }
 
         Ebook::create([
             'title' => $request->title,
             'author' => $request->author,
             'category_id' => $request->category_id,
             'description' => $request->description,
+            'cover_path' => $coverPath,
             'file_path' => $filePath,
+            'access_type' => $request->access_type,
+            'is_featured' => $request->boolean('is_featured'),
             'published_at' => $request->published_at,
         ]);
 
-        return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.ebooks.index')
+            ->with('success', 'E-book berhasil ditambahkan.');
     }
+
 
     public function show(Ebook $ebook)
     {
@@ -64,8 +78,11 @@ class EbookController extends Controller
             'author' => 'nullable|string|max:255',
             'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
+            'cover' => 'nullable|image|max:2048',
             'file' => 'nullable|mimes:pdf,epub|max:51200',
+            'access_type' => 'required|in:free,login',
             'published_at' => 'nullable|date',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         if ($request->hasFile('file')) {
@@ -73,9 +90,26 @@ class EbookController extends Controller
             $ebook->file_path = $request->file('file')->store('ebooks', 'public');
         }
 
-        $ebook->update($request->only(['title','author','category_id','description','published_at']));
+        if ($request->hasFile('cover')) {
+            if ($ebook->cover_path) {
+                Storage::disk('public')->delete($ebook->cover_path);
+            }
+            $ebook->cover_path = $request->file('cover')->store('ebook-covers', 'public');
+        }
 
-        return redirect()->route('admin.ebooks.index')->with('success', 'E-book berhasil diperbarui.');
+        $ebook->update([
+            'title' => $request->title,
+            'author' => $request->author,
+            'category_id' => $request->category_id,
+            'description' => $request->description,
+            'access_type' => $request->access_type,
+            'is_featured' => $request->boolean('is_featured'),
+            'published_at' => $request->published_at,
+        ]);
+
+        return redirect()
+            ->route('admin.ebooks.index')
+            ->with('success', 'E-book berhasil diperbarui.');
     }
 
     public function destroy(Ebook $ebook)
