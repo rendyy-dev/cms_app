@@ -39,7 +39,7 @@ Route::get('/ebooks', [PublicEbookController::class, 'index'])
 Route::get('/ebooks/{slug}', [PublicEbookController::class, 'show'])
     ->name('public.ebooks.show');
 
-Route::get('/ebooks/{slug}/download', [PublicEbookController::class, 'download'])
+Route::post('/ebooks/{slug}/download', [PublicEbookController::class, 'download'])
     ->name('public.ebooks.download');
 
 Route::get('/gallery', [PublicGalleryController::class, 'index'])

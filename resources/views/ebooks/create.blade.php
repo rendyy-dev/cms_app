@@ -87,7 +87,30 @@
             <option value="login" {{ old('access_type') == 'login' ? 'selected' : '' }}>
                 Login Required
             </option>
+            <option value="paid" {{ old('access_type') == 'paid' ? 'selected' : '' }}>
+                Berbayar
+            </option>
         </select>
+    </div>
+
+    {{-- Harga --}}
+    <div>
+        <label class="block mb-1 font-medium">Harga (Opsional)</label>
+        <input type="number"
+               name="price"
+               step="0.01"
+               value="{{ old('price') }}"
+               class="w-full px-3 py-2 rounded bg-black/50 border border-white/20">
+    </div>
+
+    {{-- WhatsApp Number --}}
+    <div>
+        <label class="block mb-1 font-medium">Nomor WhatsApp (untuk ebook berbayar)</label>
+        <input type="text"
+               name="whatsapp_number"
+               placeholder="628123456789"
+               value="{{ old('whatsapp_number') }}"
+               class="w-full px-3 py-2 rounded bg-black/50 border border-white/20">
     </div>
 
     {{-- Featured --}}
@@ -105,11 +128,10 @@
 
         <div class="relative">
             <input type="date"
-                name="published_at"
-                value="{{ old('published_at') }}"
-                class="w-42 color-white px-3 py-2 rounded bg-gray-800 text-white border border-white/20 
-                        focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400
-                        appearance-none">
+                   name="published_at"
+                   value="{{ old('published_at') }}"
+                   class="px-3 py-2 rounded bg-gray-800 text-white border border-white/20
+                          focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400">
         </div>
 
         <p class="text-xs text-gray-400 mt-2">

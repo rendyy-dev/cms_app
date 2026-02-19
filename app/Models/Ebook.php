@@ -20,6 +20,8 @@ class Ebook extends Model
         'cover_path',
         'file_path',
         'access_type',
+        'whatsapp_number',
+        'price',
         'download_count',
         'is_featured',
         'published_at',

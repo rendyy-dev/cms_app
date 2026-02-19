@@ -64,9 +64,24 @@
                 <div class="p-6 flex flex-col flex-1">
 
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs uppercase text-emerald-300">
-                            {{ $ebook->access_type === 'free' ? 'Gratis' : 'Login Required' }}
+                        @php
+                            $badge = match($ebook->access_type) {
+                                'free' => ['label' => 'Gratis', 'color' => 'text-emerald-300'],
+                                'login' => ['label' => 'Login Required', 'color' => 'text-yellow-300'],
+                                'paid' => ['label' => 'Berbayar', 'color' => 'text-pink-400'],
+                                default => ['label' => 'Unknown', 'color' => 'text-gray-400'],
+                            };
+                        @endphp
+
+                        <span class="text-xs uppercase {{ $badge['color'] }}">
+                            {{ $badge['label'] }}
                         </span>
+
+                        @if($ebook->access_type === 'paid')
+                            <div class="text-sm font-semibold text-emerald-400 mb-2">
+                                Rp {{ number_format($ebook->price, 0, ',', '.') }}
+                            </div>
+                        @endif
 
                         <span class="text-xs text-gray-500">
                             {{ $ebook->download_count }} Download

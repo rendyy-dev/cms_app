@@ -6,6 +6,7 @@ use App\Models\Ebook;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class EbookController extends Controller
 {
@@ -30,7 +31,9 @@ class EbookController extends Controller
             'description' => 'nullable|string',
             'cover' => 'nullable|image|max:2048',
             'file' => 'required|mimes:pdf,epub|max:51200',
-            'access_type' => 'required|in:free,login',
+            'access_type' => 'required|in:free,login,paid',
+            'price' => 'nullable|numeric|min:0',
+            'whatsapp_number' => 'nullable|string|max:20',
             'published_at' => 'nullable|date',
             'is_featured' => 'nullable|boolean',
         ]);
@@ -50,6 +53,8 @@ class EbookController extends Controller
             'cover_path' => $coverPath,
             'file_path' => $filePath,
             'access_type' => $request->access_type,
+            'price' => $request->price,
+            'whatsapp_number' => $request->whatsapp_number,
             'is_featured' => $request->boolean('is_featured'),
             'published_at' => $request->published_at,
         ]);
@@ -80,7 +85,9 @@ class EbookController extends Controller
             'description' => 'nullable|string',
             'cover' => 'nullable|image|max:2048',
             'file' => 'nullable|mimes:pdf,epub|max:51200',
-            'access_type' => 'required|in:free,login',
+            'access_type' => 'required|in:free,login,paid',
+            'price' => 'nullable|numeric|min:0',
+            'whatsapp_number' => 'nullable|string|max:20',
             'published_at' => 'nullable|date',
             'is_featured' => 'nullable|boolean',
         ]);
@@ -103,6 +110,8 @@ class EbookController extends Controller
             'category_id' => $request->category_id,
             'description' => $request->description,
             'access_type' => $request->access_type,
+            'price' => $request->price,
+            'whatsapp_number' => $request->whatsapp_number,
             'is_featured' => $request->boolean('is_featured'),
             'published_at' => $request->published_at,
         ]);
@@ -145,6 +154,49 @@ class EbookController extends Controller
         $ebook->forceDelete(); // hapus permanen
 
         return redirect()->route('admin.ebooks.trashed')->with('success', 'E-book berhasil dihapus permanen.');
+    }
+
+    public function download(Request $request, Ebook $ebook)
+    {
+        // ===== VALIDATE RECAPTCHA =====
+        $request->validate([
+            'g-recaptcha-response' => 'required'
+        ]);
+
+        $response = Http::asForm()->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'secret' => config('services.recaptcha.secret_key'),
+                'response' => $request->input('g-recaptcha-response'),
+                'remoteip' => $request->ip(),
+            ]
+        );
+
+        if (! $response->json('success')) {
+            return back()->withErrors([
+                'g-recaptcha-response' => 'Captcha tidak valid.'
+            ]);
+        }
+
+        // ===== LOGIC ACCESS TYPE =====
+        if ($ebook->access_type === 'paid') {
+
+            $number = $ebook->whatsapp_number;
+            $message = urlencode("Halo, saya ingin membeli ebook: {$ebook->title}");
+
+            return redirect("https://wa.me/{$number}?text={$message}");
+        }
+
+        if ($ebook->access_type === 'login' && !auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        // FREE or LOGIN PASSED
+        $ebook->incrementDownload();
+
+        return response()->download(
+            storage_path('app/public/' . $ebook->file_path)
+        );
     }
 
 }
